@@ -20,7 +20,7 @@ everything the app does, page by page.
    sets it up the next time it connects. It gives each satellite a device and
    its timers, and runs Assist's intents for the app.
 3. **Flash a Home Assistant Voice Preview Edition** from its
-   [install page](https://ohf-voice.github.io/voice-pe-alt-firmware/voice-pe-voice-labs/)
+   [install page](https://ohf-voice.github.io/firmware-voice-incubator/voice-pe/)
    and give it your Wi-Fi. The app finds it on the network and connects to it.
 
 Then open **Voice Incubator** in the sidebar to make commands, name things, set up

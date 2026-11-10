@@ -4,9 +4,22 @@ Source repository of the [Voice Incubator][docs] app for Home Assistant. The
 app's own source is [OHF-Voice/voice-incubator][source]: this repository
 builds a release of it into the app.
 
+## Install
+
+[![Add the repository to your Home Assistant.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2FOHF-Voice%2Fapp-voice-incubator)
+
+Add `https://github.com/OHF-Voice/app-voice-incubator` to Home Assistant's app
+repositories, then install **Voice Incubator**. Its
+[install steps](https://github.com/OHF-Voice/voice-incubator#install) have the
+integration and the satellites' firmware too.
+
 ## Releases
 
-Not published yet: where the app is installed from is still to be decided.
+A published release builds and publishes the app's image,
+`ghcr.io/ohf-voice/app-voice-incubator` (amd64 and aarch64), tagged with its
+version ([Deploy](.github/workflows/deploy.yaml)): the release's tag is
+`config.yaml`'s version. The source it builds is the release
+`VOICE_INCUBATOR_VERSION` pins in the Dockerfile.
 
 ## Local build
 
