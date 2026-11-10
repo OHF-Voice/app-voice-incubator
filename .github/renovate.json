@@ -8,7 +8,7 @@
     {
       "customType": "regex",
       "description": "OHF-Voice/voice-incubator in the Dockerfile",
-      "managerFilePatterns": ["/^voice_labs/Dockerfile$/"],
+      "managerFilePatterns": ["/^voice_incubator/Dockerfile$/"],
       "matchStrings": ["ARG VOICE_INCUBATOR_VERSION=(?<currentValue>\\S+)"],
       "depNameTemplate": "OHF-Voice/voice-incubator",
       "datasourceTemplate": "github-releases",

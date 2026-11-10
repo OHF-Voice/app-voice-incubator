@@ -1,4 +1,4 @@
-# Voice Labs
+# Voice Incubator
 
 Voice satellites with commands you make yourself, recognized on this machine.
 A command says what to listen for, where, and what happens in Home Assistant:
@@ -14,18 +14,26 @@ everything the app does, page by page.
    530 MB: Parakeet (speech), EmbeddingGemma 2 (meaning), GLiNER (the command
    fallback) and Piper's Kristin (its voice) -- into its own storage, and its
    page shows how far it got. Later starts and updates keep them.
-2. **Install the Voice Labs integration** with [HACS](https://hacs.xyz): add
+2. **Install the Voice Incubator integration** with [HACS](https://hacs.xyz): add
    `https://github.com/OHF-Voice/integration-voice-incubator` as a custom repository of type
-   Integration, download **Voice Labs**, and restart Home Assistant. The app
+   Integration, download **Voice Incubator**, and restart Home Assistant. The app
    sets it up the next time it connects. It gives each satellite a device and
    its timers, and runs Assist's intents for the app.
-3. **Flash a Home Assistant Voice Preview Edition** with the Voice Labs
-   firmware from its
+3. **Flash a Home Assistant Voice Preview Edition** from its
    [install page](https://ohf-voice.github.io/voice-pe-alt-firmware/voice-pe-voice-labs/)
    and give it your Wi-Fi. The app finds it on the network and connects to it.
 
-Then open **Voice Labs** in the sidebar to make commands, name things, set up
+Then open **Voice Incubator** in the sidebar to make commands, name things, set up
 satellites and look at sessions.
+
+## From Voice Labs
+
+Voice Incubator was Voice Labs. To Home Assistant it is a new app, with
+storage of its own: what Voice Labs kept -- commands, names, settings, people,
+voices, custom wake words -- doesn't come along by itself. Its integration is
+new too: see the guide's
+[From Voice Labs](https://github.com/OHF-Voice/integration-voice-incubator/blob/main/GUIDE.md#from-voice-labs).
+Satellites with the Voice Labs firmware are found as before.
 
 ## Home Assistant's voice assistants
 

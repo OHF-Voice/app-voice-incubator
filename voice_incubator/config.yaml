@@ -1,7 +1,7 @@
 ---
 version: 0.2.0
-slug: voice_labs
-name: Voice Labs
+slug: voice_incubator
+name: Voice Incubator
 description: Voice satellites with your own commands, recognized on this machine
 url: https://github.com/OHF-Voice/app-voice-incubator
 arch:
@@ -14,15 +14,15 @@ host_network: true
 ingress: true
 # /config: custom wake words (wake_words/) and the wake word training kit
 # (wake_training/), reachable from the Samba and file
-# editor apps as addon_configs/<slug>_voice_labs.
+# editor apps as addon_configs/<slug>_voice_incubator.
 map:
   - addon_config:rw
 ingress_port: 8099
 panel_icon: mdi:account-voice
-panel_title: Voice Labs
+panel_title: Voice Incubator
 # Home Assistant's pipelines: the app's speech-to-text, text-to-speech and
-# conversation agent over Wyoming (voice_labs/wyoming_server.py), announced to
-# Home Assistant.
+# conversation agent over Wyoming (voice_incubator/wyoming_server.py),
+# announced to Home Assistant.
 discovery:
   - wyoming
 options:

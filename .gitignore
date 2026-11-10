@@ -1,4 +1,4 @@
 __pycache__/
 .mypy_cache/
 # A checkout's source for a local build (the source's scripts/app_source.sh).
-voice_labs/voice-incubator.tar.gz
+voice_incubator/voice-incubator.tar.gz

@@ -28,7 +28,7 @@ RUN \
         python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
-# FluidSynth plays the call's sounds (voice_labs/instruments.py): only its
+# FluidSynth plays the call's sounds (voice_incubator/instruments.py): only its
 # synth, so without the audio drivers Debian's is built with -- SDL, which
 # brings Mesa and LLVM (200 MB), PulseAudio, PipeWire, JACK. libsndfile reads
 # the SoundFont's compressed samples.
@@ -56,7 +56,7 @@ RUN \
 FROM build-base AS source
 ARG VOICE_INCUBATOR_VERSION=0.2.0
 
-WORKDIR /usr/src/voice_labs
+WORKDIR /usr/src/voice_incubator
 COPY Dockerfile voice-incubator*.tar.gz /tmp/source/
 RUN \
     if [ -f /tmp/source/voice-incubator.tar.gz ]; then \
@@ -73,29 +73,29 @@ FROM build-base AS builder
 ARG BUILD_ARCH
 ARG TRAINING=true
 
-WORKDIR /usr/src/voice_labs
+WORKDIR /usr/src/voice_incubator
 
-COPY --from=source /usr/src/voice_labs/requirements.txt /usr/src/voice_labs/requirements-training.txt ./
+COPY --from=source /usr/src/voice_incubator/requirements.txt /usr/src/voice_incubator/requirements-training.txt ./
 RUN \
     pip3 install --no-cache-dir -U --ignore-installed setuptools wheel \
     && pip3 install --no-cache-dir -r requirements.txt \
     && if [ "${TRAINING}" = "true" ]; then pip3 install --no-cache-dir -r requirements-training.txt; fi
 
-# What the image carries besides its code (voice_labs/downloads.py, IMAGE):
+# What the image carries besides its code (voice_incubator/downloads.py, IMAGE):
 # the speaker, wake word and Kaldi models, and Kaldi's tools for this
 # architecture, each checked against its SHA-256.
-COPY --from=source /usr/src/voice_labs/voice_labs/__init__.py /usr/src/voice_labs/voice_labs/downloads.py ./voice_labs/
-RUN python3 -m voice_labs.downloads fetch models --arch "${BUILD_ARCH:-$(dpkg --print-architecture | sed 's/arm64/aarch64/')}"
+COPY --from=source /usr/src/voice_incubator/voice_incubator/__init__.py /usr/src/voice_incubator/voice_incubator/downloads.py ./voice_incubator/
+RUN python3 -m voice_incubator.downloads fetch models --arch "${BUILD_ARCH:-$(dpkg --print-architecture | sed 's/arm64/aarch64/')}"
 
 # The wake verifier's resident decoder, compiled against those tools; then
 # only what the verifier, the decoder and phonetisaurus (Kaldi mode's guessed
 # pronunciations) use of them is kept (wyoming_wake_kaldi/prune.py).
 COPY --from=source \
-    /usr/src/voice_labs/wyoming_wake_kaldi/__init__.py \
-    /usr/src/voice_labs/wyoming_wake_kaldi/kaldi.py \
-    /usr/src/voice_labs/wyoming_wake_kaldi/prune.py \
+    /usr/src/voice_incubator/wyoming_wake_kaldi/__init__.py \
+    /usr/src/voice_incubator/wyoming_wake_kaldi/kaldi.py \
+    /usr/src/voice_incubator/wyoming_wake_kaldi/prune.py \
     ./wyoming_wake_kaldi/
-COPY --from=source /usr/src/voice_labs/wyoming_wake_kaldi/decoderd ./wyoming_wake_kaldi/decoderd
+COPY --from=source /usr/src/voice_incubator/wyoming_wake_kaldi/decoderd ./wyoming_wake_kaldi/decoderd
 RUN \
     mkdir -p models/wake-kaldi-decoderd \
     && bash wyoming_wake_kaldi/decoderd/build.sh "$PWD/models/wake-kaldi-tools" "$PWD/models/wake-kaldi-decoderd/verify_decoderd" \
@@ -103,8 +103,8 @@ RUN \
     && python3 -m wyoming_wake_kaldi.prune models/wake-kaldi-tools models/wake-kaldi-decoderd/verify_decoderd models/wake-kaldi-tools/phonetisaurus
 
 # adapt-ctc's native searches (several times faster than the fallbacks).
-COPY --from=source /usr/src/voice_labs/setup.py ./
-COPY --from=source /usr/src/voice_labs/adapt_ctc ./adapt_ctc
+COPY --from=source /usr/src/voice_incubator/setup.py ./
+COPY --from=source /usr/src/voice_incubator/adapt_ctc ./adapt_ctc
 RUN python3 setup.py build_ext --inplace && rm -rf build
 
 
@@ -113,7 +113,7 @@ RUN python3 setup.py build_ext --inplace && rm -rf build
 FROM ${BUILD_FROM}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-WORKDIR /usr/src/voice_labs
+WORKDIR /usr/src/voice_incubator
 
 RUN \
     apt-get update \
@@ -130,18 +130,18 @@ RUN \
 
 COPY --from=builder /usr/local /usr/local
 RUN ldconfig
-COPY --from=builder /usr/src/voice_labs/models ./models
-COPY --from=source /usr/src/voice_labs/wake.yaml ./
-COPY --from=source /usr/src/voice_labs/sounds ./sounds
-COPY --from=builder /usr/src/voice_labs/adapt_ctc ./adapt_ctc
-COPY --from=source /usr/src/voice_labs/wyoming_wake_kaldi ./wyoming_wake_kaldi
-COPY --from=source /usr/src/voice_labs/sentence_stream ./sentence_stream
-COPY --from=source /usr/src/voice_labs/microwakeword ./microwakeword
-COPY --from=source /usr/src/voice_labs/voice_labs ./voice_labs
+COPY --from=builder /usr/src/voice_incubator/models ./models
+COPY --from=source /usr/src/voice_incubator/wake.yaml ./
+COPY --from=source /usr/src/voice_incubator/sounds ./sounds
+COPY --from=builder /usr/src/voice_incubator/adapt_ctc ./adapt_ctc
+COPY --from=source /usr/src/voice_incubator/wyoming_wake_kaldi ./wyoming_wake_kaldi
+COPY --from=source /usr/src/voice_incubator/sentence_stream ./sentence_stream
+COPY --from=source /usr/src/voice_incubator/microwakeword ./microwakeword
+COPY --from=source /usr/src/voice_incubator/voice_incubator ./voice_incubator
 # Parakeet, EmbeddingGemma and GLiNER are downloaded into the app's data the
-# first time it starts (voice_labs/downloads.py), and Piper's voices the first
-# time one is used (voice_labs/piper_voices.py): linked from models/.
-RUN python3 -m voice_labs.downloads link /data/models
+# first time it starts (voice_incubator/downloads.py), and Piper's voices the first
+# time one is used (voice_incubator/piper_voices.py): linked from models/.
+RUN python3 -m voice_incubator.downloads link /data/models
 
 # Started by its s6 service, which reads its options from /data/options.json.
 WORKDIR /

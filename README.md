@@ -11,15 +11,15 @@ Not published yet: where the app is installed from is still to be decided.
 ## Local build
 
 ```sh
-docker build -t local/app-voice-incubator voice_labs
+docker build -t local/app-voice-incubator voice_incubator
 ```
 
-This builds the release `voice_labs/Dockerfile` pins
+This builds the release `voice_incubator/Dockerfile` pins
 (`VOICE_INCUBATOR_VERSION`). To build a checkout of the source instead, write
 it beside the Dockerfile first, from that checkout:
 
 ```sh
-scripts/app_source.sh ~/opt/app-voice-incubator/voice_labs
+scripts/app_source.sh ~/opt/app-voice-incubator/voice_incubator
 ```
 
 ## Related
@@ -30,7 +30,7 @@ scripts/app_source.sh ~/opt/app-voice-incubator/voice_labs
 - [firmware-voice-incubator][firmware]: the satellites' ESPHome firmware, and
   the protocol they speak.
 
-[docs]: voice_labs/DOCS.md
+[docs]: voice_incubator/DOCS.md
 [source]: https://github.com/OHF-Voice/voice-incubator
 [integration]: https://github.com/OHF-Voice/integration-voice-incubator
 [firmware]: https://github.com/OHF-Voice/firmware-voice-incubator
