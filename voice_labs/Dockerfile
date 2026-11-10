@@ -1,23 +1,16 @@
-# Two images from one file:
-#
-# - the Home Assistant app (the last stage, what Home Assistant builds), from
-#   its Debian base (build.yaml), started by its s6 service (rootfs/);
-# - a standalone image (--target standalone), from Debian itself, started
-#   directly: see README.md, "Standalone".
-#
-# What is compiled -- adapt-ctc's Viterbi, the wake verifier's decoder,
-# FluidSynth -- and the Python packages are built in the first stage, so the
+# Base image updated by Renovate, update versionCompatibility on a base bump
+ARG BUILD_FROM=ghcr.io/home-assistant/base-debian:trixie-2026.11.0@sha256:d996c8f8ef0096a1ac3756766149b31b8171afc663068cc192f2bcab20f1b8c9
+
+# The app is built from a release of its source, OHF-Voice/voice-incubator, in
+# the steps its own (standalone) Dockerfile takes: a change there belongs here
+# too. What is compiled -- adapt-ctc's searches, the wake verifier's decoder,
+# FluidSynth -- and the Python packages are built in the first stages, so the
 # image has no compiler. TRAINING=false leaves out wake word training
 # (TensorFlow, 2 GB).
-ARG BUILD_FROM=debian:trixie-slim
 
-FROM ${BUILD_FROM} AS builder
-ARG BUILD_ARCH
-ARG TRAINING=true
-
+FROM ${BUILD_FROM} AS build-base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-WORKDIR /usr/src/voice_labs
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 RUN \
@@ -57,7 +50,32 @@ RUN \
     && cmake --install /tmp/fluidsynth/build \
     && rm -rf /tmp/fluidsynth /tmp/fluidsynth.tar.gz /usr/local/bin/fluidsynth /usr/local/include /usr/local/share
 
-COPY requirements.txt requirements-training.txt ./
+
+# The source: the release pinned here, or a checkout's -- voice-incubator.tar.gz
+# beside this file, which the source's scripts/app_source.sh writes.
+FROM build-base AS source
+ARG VOICE_INCUBATOR_VERSION=0.2.0
+
+WORKDIR /usr/src/voice_labs
+COPY Dockerfile voice-incubator*.tar.gz /tmp/source/
+RUN \
+    if [ -f /tmp/source/voice-incubator.tar.gz ]; then \
+        tar xzf /tmp/source/voice-incubator.tar.gz --strip-components 1; \
+    else \
+        curl -sSfL \
+            "https://github.com/OHF-Voice/voice-incubator/archive/refs/tags/v${VOICE_INCUBATOR_VERSION}.tar.gz" \
+            | tar xz --strip-components 1; \
+    fi \
+    && rm -rf /tmp/source
+
+
+FROM build-base AS builder
+ARG BUILD_ARCH
+ARG TRAINING=true
+
+WORKDIR /usr/src/voice_labs
+
+COPY --from=source /usr/src/voice_labs/requirements.txt /usr/src/voice_labs/requirements-training.txt ./
 RUN \
     pip3 install --no-cache-dir -U --ignore-installed setuptools wheel \
     && pip3 install --no-cache-dir -r requirements.txt \
@@ -66,30 +84,33 @@ RUN \
 # What the image carries besides its code (voice_labs/downloads.py, IMAGE):
 # the speaker, wake word and Kaldi models, and Kaldi's tools for this
 # architecture, each checked against its SHA-256.
-COPY voice_labs/__init__.py voice_labs/downloads.py ./voice_labs/
+COPY --from=source /usr/src/voice_labs/voice_labs/__init__.py /usr/src/voice_labs/voice_labs/downloads.py ./voice_labs/
 RUN python3 -m voice_labs.downloads fetch models --arch "${BUILD_ARCH:-$(dpkg --print-architecture | sed 's/arm64/aarch64/')}"
 
 # The wake verifier's resident decoder, compiled against those tools; then
 # only what the verifier, the decoder and phonetisaurus (Kaldi mode's guessed
 # pronunciations) use of them is kept (wyoming_wake_kaldi/prune.py).
-COPY wyoming_wake_kaldi/__init__.py wyoming_wake_kaldi/kaldi.py wyoming_wake_kaldi/prune.py ./wyoming_wake_kaldi/
-COPY wyoming_wake_kaldi/decoderd ./wyoming_wake_kaldi/decoderd
+COPY --from=source \
+    /usr/src/voice_labs/wyoming_wake_kaldi/__init__.py \
+    /usr/src/voice_labs/wyoming_wake_kaldi/kaldi.py \
+    /usr/src/voice_labs/wyoming_wake_kaldi/prune.py \
+    ./wyoming_wake_kaldi/
+COPY --from=source /usr/src/voice_labs/wyoming_wake_kaldi/decoderd ./wyoming_wake_kaldi/decoderd
 RUN \
     mkdir -p models/wake-kaldi-decoderd \
     && bash wyoming_wake_kaldi/decoderd/build.sh "$PWD/models/wake-kaldi-tools" "$PWD/models/wake-kaldi-decoderd/verify_decoderd" \
     && rm -rf models/wake-kaldi-decoderd/.fst_shadow_include \
     && python3 -m wyoming_wake_kaldi.prune models/wake-kaldi-tools models/wake-kaldi-decoderd/verify_decoderd models/wake-kaldi-tools/phonetisaurus
 
-# adapt-ctc's native Viterbi (several times faster than the numpy fallback).
-COPY setup.py ./
-COPY adapt_ctc ./adapt_ctc
+# adapt-ctc's native searches (several times faster than the fallbacks).
+COPY --from=source /usr/src/voice_labs/setup.py ./
+COPY --from=source /usr/src/voice_labs/adapt_ctc ./adapt_ctc
 RUN python3 setup.py build_ext --inplace && rm -rf build
 
 
 # Perl: Kaldi's scripts, which build a wake word's graphs (Encode and the rest
 # of Perl's modules, not only the minimal Perl Debian always has).
-FROM ${BUILD_FROM} AS runtime
-
+FROM ${BUILD_FROM}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 WORKDIR /usr/src/voice_labs
@@ -110,35 +131,27 @@ RUN \
 COPY --from=builder /usr/local /usr/local
 RUN ldconfig
 COPY --from=builder /usr/src/voice_labs/models ./models
-COPY wake.yaml ./
-COPY sounds ./sounds
+COPY --from=source /usr/src/voice_labs/wake.yaml ./
+COPY --from=source /usr/src/voice_labs/sounds ./sounds
 COPY --from=builder /usr/src/voice_labs/adapt_ctc ./adapt_ctc
-COPY wyoming_wake_kaldi ./wyoming_wake_kaldi
-COPY sentence_stream ./sentence_stream
-COPY microwakeword ./microwakeword
-COPY voice_labs ./voice_labs
+COPY --from=source /usr/src/voice_labs/wyoming_wake_kaldi ./wyoming_wake_kaldi
+COPY --from=source /usr/src/voice_labs/sentence_stream ./sentence_stream
+COPY --from=source /usr/src/voice_labs/microwakeword ./microwakeword
+COPY --from=source /usr/src/voice_labs/voice_labs ./voice_labs
 # Parakeet, EmbeddingGemma and GLiNER are downloaded into the app's data the
 # first time it starts (voice_labs/downloads.py), and Piper's voices the first
 # time one is used (voice_labs/piper_voices.py): linked from models/.
 RUN python3 -m voice_labs.downloads link /data/models
 
+# Started by its s6 service, which reads its options from /data/options.json.
+WORKDIR /
+COPY rootfs /
+
 HEALTHCHECK --start-period=10m \
     CMD curl -sf http://127.0.0.1:8099/health > /dev/null || exit 1
 
-
-# Standalone: Home Assistant's address and a long-lived access token from
-# HASS_URL and HASS_TOKEN; the app's data in /data. The web UI (8099) and the
-# Wyoming server (10800) listen on every address the container has; what
-# reaches them is the container's network's to say. More options after the
-# image name (`--help`).
-FROM runtime AS standalone
-VOLUME /data
-EXPOSE 8099 10800
-ENTRYPOINT ["python3", "-m", "voice_labs", "--data-dir", "/data", "--http-host", "0.0.0.0", "--wyoming-host", "0.0.0.0"]
-
-
-# The Home Assistant app: started by its s6 service, which reads its options
-# from /data/options.json.
-FROM runtime AS app
-WORKDIR /
-COPY rootfs /
+LABEL \
+    org.opencontainers.image.title="Home Assistant App: Voice Incubator" \
+    org.opencontainers.image.description="Voice satellites with your own commands, recognized on this machine" \
+    org.opencontainers.image.source="https://github.com/OHF-Voice/app-voice-incubator" \
+    org.opencontainers.image.licenses="Apache License 2.0"
