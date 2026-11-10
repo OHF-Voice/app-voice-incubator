@@ -5,7 +5,7 @@ A command says what to listen for, where, and what happens in Home Assistant:
 speak a response, run a script, activate a scene, or run an action. It hears
 and speaks English.
 
-**The guide is in [OHF-Voice/voice-labs](https://github.com/OHF-Voice/voice-labs/blob/main/GUIDE.md):**
+**The guide is in [OHF-Voice/integration-voice-incubator](https://github.com/OHF-Voice/integration-voice-incubator/blob/main/GUIDE.md):**
 everything the app does, page by page.
 
 ## Getting started
@@ -15,7 +15,7 @@ everything the app does, page by page.
    fallback) and Piper's Kristin (its voice) -- into its own storage, and its
    page shows how far it got. Later starts and updates keep them.
 2. **Install the Voice Labs integration** with [HACS](https://hacs.xyz): add
-   `https://github.com/OHF-Voice/voice-labs` as a custom repository of type
+   `https://github.com/OHF-Voice/integration-voice-incubator` as a custom repository of type
    Integration, download **Voice Labs**, and restart Home Assistant. The app
    sets it up the next time it connects. It gives each satellite a device and
    its timers, and runs Assist's intents for the app.
