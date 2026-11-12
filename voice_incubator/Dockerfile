@@ -54,7 +54,7 @@ RUN \
 # The source: the release pinned here, or a checkout's -- voice-incubator.tar.gz
 # beside this file, which the source's scripts/app_source.sh writes.
 FROM build-base AS source
-ARG VOICE_INCUBATOR_VERSION=0.2.0
+ARG VOICE_INCUBATOR_VERSION=0.2.1
 
 WORKDIR /usr/src/voice_incubator
 COPY Dockerfile voice-incubator*.tar.gz /tmp/source/

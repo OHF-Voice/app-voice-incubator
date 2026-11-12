@@ -1,5 +1,5 @@
 ---
-version: 0.2.0
+version: 0.2.1
 slug: voice_incubator
 name: Voice Incubator
 description: Voice satellites with your own commands, recognized on this machine
