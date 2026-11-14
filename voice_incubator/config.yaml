@@ -31,6 +31,8 @@ options:
   wyoming_port: 10800
   debug_logging: false
 schema:
+  # Required, with no default: the app won't start until one is picked.
+  language: list(en|de|es|fr|it|nl|pl|ru|uk)
   wake_cutoff: float(0.05,1)?
   speaker_threshold: float(0,1)
   silence_seconds: float(0.3,5)

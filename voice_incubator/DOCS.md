@@ -3,23 +3,28 @@
 Voice satellites with commands you make yourself, recognized on this machine.
 A command says what to listen for, where, and what happens in Home Assistant:
 speak a response, run a script, activate a scene, or run an action. It hears
-and speaks English.
+and speaks one language: English, German, Spanish, French, Italian, Dutch,
+Polish, Russian or Ukrainian (the web UI is in English).
 
 **The guide is in [OHF-Voice/integration-voice-incubator](https://github.com/OHF-Voice/integration-voice-incubator/blob/main/GUIDE.md):**
 everything the app does, page by page.
 
 ## Getting started
 
-1. **Start the app.** The first time, it downloads its speech models -- about
-   530 MB: Parakeet (speech), EmbeddingGemma 2 (meaning), GLiNER (the command
-   fallback) and Piper's Kristin (its voice) -- into its own storage, and its
-   page shows how far it got. Later starts and updates keep them.
-2. **Install the Voice Incubator integration** with [HACS](https://hacs.xyz): add
+1. **Pick its language** on the app's Configuration tab: it won't start
+   without one.
+2. **Start the app.** The first time, it downloads its speech models -- about
+   530 MB in English: Parakeet (speech), EmbeddingGemma 2 (meaning), GLiNER
+   (the command fallback) and Piper's Kristin (its voice); in another
+   language, NVIDIA's FastConformer for it and a Piper voice in it, without
+   GLiNER -- into its own storage, and its page shows how far it got. Later
+   starts and updates keep them.
+3. **Install the Voice Incubator integration** with [HACS](https://hacs.xyz): add
    `https://github.com/OHF-Voice/integration-voice-incubator` as a custom repository of type
    Integration, download **Voice Incubator**, and restart Home Assistant. The app
    sets it up the next time it connects. It gives each satellite a device and
    its timers, and runs Assist's intents for the app.
-3. **Flash a Home Assistant Voice Preview Edition** from its
+4. **Flash a Home Assistant Voice Preview Edition** from its
    [install page](https://ohf-voice.github.io/firmware-voice-incubator/voice-pe/)
    and give it your Wi-Fi. The app finds it on the network and connects to it.
 

@@ -1,5 +1,12 @@
 ---
 configuration:
+  language:
+    name: Language
+    description: >-
+      What the app hears and says: en English, de German, es Spanish, fr
+      French, it Italian, nl Dutch, pl Polish, ru Russian, uk Ukrainian. Its
+      speech model is downloaded for it at the first start. Commands from
+      the library are in this language; the web UI stays in English.
   wake_cutoff:
     name: Wake word cutoff
     description: >-
