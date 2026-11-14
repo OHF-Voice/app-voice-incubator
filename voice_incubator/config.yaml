@@ -17,6 +17,11 @@ ingress: true
 # editor apps as addon_configs/<slug>_voice_incubator.
 map:
   - addon_config:rw
+# What wake word training installs when asked (TensorFlow's cache, the kit:
+# about 4 GB), which is downloaded again rather than backed up.
+backup_exclude:
+  - "*/uv-cache"
+  - "*/models/wake-training"
 ingress_port: 8099
 panel_icon: mdi:account-voice
 panel_title: Voice Incubator

@@ -5,8 +5,9 @@ ARG BUILD_FROM=ghcr.io/home-assistant/base-debian:trixie-2026.11.0@sha256:d996c8
 # the steps its own (standalone) Dockerfile takes: a change there belongs here
 # too. What is compiled -- adapt-ctc's searches, the wake verifier's decoder,
 # FluidSynth -- and the Python packages are built in the first stages, so the
-# image has no compiler. TRAINING=false leaves out wake word training
-# (TensorFlow, 2 GB).
+# image has no compiler. Wake word training (TensorFlow, 2 GB) isn't in it:
+# the Wake words page installs it when asked, with uv, into a cache in /data
+# (voice_incubator/wake_training_setup.py).
 
 FROM ${BUILD_FROM} AS build-base
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -71,15 +72,14 @@ RUN \
 
 FROM build-base AS builder
 ARG BUILD_ARCH
-ARG TRAINING=true
+ARG UV_VERSION=0.13.7
 
 WORKDIR /usr/src/voice_incubator
 
-COPY --from=source /usr/src/voice_incubator/requirements.txt /usr/src/voice_incubator/requirements-training.txt ./
+COPY --from=source /usr/src/voice_incubator/requirements.txt ./
 RUN \
     pip3 install --no-cache-dir -U --ignore-installed setuptools wheel \
-    && pip3 install --no-cache-dir -r requirements.txt \
-    && if [ "${TRAINING}" = "true" ]; then pip3 install --no-cache-dir -r requirements-training.txt; fi
+    && pip3 install --no-cache-dir -r requirements.txt "uv==${UV_VERSION}"
 
 # What the image carries besides its code (voice_incubator/downloads.py, IMAGE):
 # the speaker, wake word and Kaldi models, and Kaldi's tools for this
