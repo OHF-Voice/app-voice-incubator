@@ -1,0 +1,25 @@
+---
+# yamllint disable rule:comments rule:line-length rule:truthy
+# config.yaml on main is what every Supervisor reads: it may change only
+# with a new version (.github/scripts/store_config.py).
+name: Store config
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  config-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - run: |
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install --quiet pyyaml==6.0.2
+          "$RUNNER_TEMP/venv/bin/python" .github/scripts/store_config.py
