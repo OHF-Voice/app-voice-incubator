@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.4
+
+- **The web UI opens again.** Its port is now one the Supervisor picks
+  instead of 8099, which another app on the host's network could hold.
+  That change reached the app store before the app did, so 0.3.3
+  installed or updated since then sent the web UI to a port nothing
+  listened on: "502: Bad Gateway" (OHF-Voice/voice-incubator#25,
+  OHF-Voice/app-voice-incubator#3).
+
 ## 0.3.3
 
 - **Satellites stay connected on a weak Wi-Fi link.** Missed mDNS
